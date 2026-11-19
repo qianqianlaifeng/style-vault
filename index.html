@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="zh-CN" class="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>STYLEVAULT · AI 视频风格库 — 一图一画风，剧本自动匹配</title>
+<meta name="description" content="STYLEVAULT 是一个面向 AI 视频创作的风格库：每个画风对应一张参考图与一整套可复用的画面语言（色卡/光线/镜头/材质/提示词），支持抽卡抽取动画，并可上传剧本·小说·分镜自动匹配最适合的 3 种画风。" />
+<meta name="keywords" content="AI视频风格库,画风参考,风格卡,提示词模板,剧本匹配,AI短剧,漫剧风格,抽卡" />
+<meta name="theme-color" content="#212121" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="STYLEVAULT · AI 视频风格库" />
+<meta property="og:description" content="一图一画风 · 抽卡找灵感 · 上传剧本自动匹配 3 种画风" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%237cb3ff'/%3E%3Cstop offset='1' stop-color='%23a78bfa'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='%23171717'/%3E%3Cpath d='M18 20h28L30 32l16 12H18l16-12z' fill='url(%23g)'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+
+<!-- ── 背景特效层 ───────────────────────────────────────── -->
+<div class="bg-fx" aria-hidden="true">
+  <div class="blob blob-a"></div>
+  <div class="blob blob-b"></div>
+  <div class="blob blob-c"></div>
+  <div class="grid-overlay"></div>
+  <div class="noise"></div>
+  <div class="spotlight spotlight-1"></div>
+  <div class="spotlight spotlight-2"></div>
+</div>
+
+<!-- ── 顶部导航 ─────────────────────────────────────────── -->
+<header class="nav" id="nav">
+  <div class="nav-inner">
+    <a class="brand" href="#top">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 64 64" width="26" height="26"><defs><linearGradient id="bm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7cb3ff"/><stop offset="1" stop-color="#a78bfa"/></linearGradient></defs><rect width="64" height="64" rx="16" fill="#1b1b1b"/><path d="M18 20h28L30 32l16 12H18l16-12z" fill="url(#bm)"/></svg>
+      </span>
+      <span class="brand-text">
+        <b>STYLEVAULT</b>
+        <i>AI 视频风格库</i>
+      </span>
+    </a>
+
+    <nav class="nav-links">
+      <a href="#library" class="nav-link">风格库</a>
+      <a href="#gacha" class="nav-link">抽取</a>
+      <a href="#matcher" class="nav-link">智能匹配</a>
+      <a href="#mine" class="nav-link">我的风格</a>
+    </nav>
+
+    <div class="nav-actions">
+      <button class="ghost-btn" id="navFavBtn" title="我的收藏">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20.5s-7.5-4.7-7.5-10A4.5 4.5 0 0 1 12 7.5a4.5 4.5 0 0 1 7.5 3c0 5.3-7.5 10-7.5 10z"/></svg>
+        <span id="favCount">0</span>
+      </button>
+      <button class="primary-btn small" id="navDrawBtn">
+        <span class="btn-spark"></span>开始抽卡
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ── HERO ─────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">
+      <span class="pulse-dot"></span>
+      <span>AI VIDEO STYLE LIBRARY · v1.0</span>
+    </div>
+
+    <h1 class="hero-title" id="heroTitle" aria-label="让每一帧都有画风"></h1>
+
+    <p class="hero-sub">
+      每个画风对应<b>一张参考图</b>与一整套可复用的画面语言 —— 色卡、光线、镜头、材质、运镜、提示词模板。<br />
+      没灵感就<b>抽卡</b>，剧本没头绪就<b>上传自动匹配</b>，本地算完即走。
+    </p>
+
+    <div class="hero-cta">
+      <button class="primary-btn" data-scroll="#gacha"><span class="btn-spark"></span>抽一个画风</button>
+      <button class="ghost-btn lg" data-scroll="#matcher">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 16V4m0 0L8 8m4-4 4 4M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+        上传剧本自动匹配
+      </button>
+    </div>
+
+    <div class="hero-stats" id="heroStats">
+      <div class="stat"><b class="count" data-to="26">0</b><span>套画风</span></div>
+      <div class="stat"><b class="count" data-to="11">0</b><span>个分类</span></div>
+      <div class="stat"><b class="count" data-to="3">0</b><span>种推荐画风</span></div>
+      <div class="stat"><b class="count" data-to="100" data-suffix="%">0</b><span>本地匹配</span></div>
+    </div>
+  </div>
+
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track" id="marqueeTrack"></div>
+  </div>
+</section>
+
+<!-- ── 风格库 ───────────────────────────────────────────── -->
+<section class="section" id="library">
+  <div class="sec-head">
+    <div>
+      <span class="sec-kicker">01 / LIBRARY</span>
+      <h2 class="sec-title shimmer-text">风格库 · 一图一画风</h2>
+      <p class="sec-desc">点击任意画风查看色卡、光线、镜头与可复制的提示词模板；收藏后可在「我的风格」里回看。</p>
+    </div>
+    <div class="sec-tools">
+      <label class="search">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+        <input id="searchInput" type="search" placeholder="搜索画风 / 题材 / 关键词" autocomplete="off" />
+      </label>
+      <select id="sortSelect" class="select">
+        <option value="hot">按热度</option>
+        <option value="new">按最新</option>
+        <option value="name">按名称</option>
+        <option value="rarity">按稀有度</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="chips" id="catChips"></div>
+
+  <div class="grid" id="styleGrid"></div>
+  <div class="empty" id="gridEmpty" hidden>没有匹配的画风，换个关键词试试。</div>
+</section>
+
+<!-- ── 抽卡 ─────────────────────────────────────────────── -->
+<section class="section" id="gacha">
+  <div class="sec-head">
+    <div>
+      <span class="sec-kicker">02 / DRAW</span>
+      <h2 class="sec-title shimmer-text">灵感抽卡 · 抽到什么用什么</h2>
+      <p class="sec-desc">没灵感的时候交给随机数。典藏画风带专属光效，抽中即点亮。</p>
+    </div>
+    <div class="sec-tools">
+      <button class="ghost-btn" id="drawOneBtn">抽 1 张</button>
+      <button class="primary-btn small" id="drawTenBtn"><span class="btn-spark"></span>抽 10 张</button>
+    </div>
+  </div>
+
+  <div class="gacha-wrap">
+    <div class="gacha-stage" id="gachaStage">
+      <canvas class="gacha-fx" id="gachaFx"></canvas>
+      <div class="rays" id="gachaRays"></div>
+      <div class="deck" id="deck">
+        <div class="deck-card back c1"></div>
+        <div class="deck-card back c2"></div>
+        <div class="deck-card back c3"></div>
+        <div class="deck-card back c4"></div>
+      </div>
+      <div class="deck-glow"></div>
+      <div class="draw-status" id="drawStatus">准备就绪 · 点击「抽 1 张」开始</div>
+    </div>
+
+    <aside class="gacha-side">
+      <div class="panel">
+        <h3 class="panel-title">稀有度概率</h3>
+        <div class="rate-row"><span class="rate-dot r-r"></span><span>常见 R</span><b>62%</b></div>
+        <div class="rate-row"><span class="rate-dot r-sr"></span><span>稀有 SR</span><b>30%</b></div>
+        <div class="rate-row"><span class="rate-dot r-ssr"></span><span>典藏 SSR</span><b>8%</b></div>
+      </div>
+      <div class="panel">
+        <h3 class="panel-title">抽取记录</h3>
+        <div class="draw-history" id="drawHistory"><p class="muted">还没有抽取记录</p></div>
+      </div>
+      <div class="panel tips">
+        <h3 class="panel-title">用法建议</h3>
+        <ul>
+          <li>先用「智能匹配」锁定 3 个候选，再用抽卡在候选之间试手感。</li>
+          <li>抽中画风后，详情页可一键复制提示词模板，替换 <code>{场景}{角色}{镜头}</code>。</li>
+          <li>收藏会保存在本机浏览器，换设备不跟随。</li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+
+  <div class="draw-results grid" id="drawResults" hidden></div>
+</section>
+
+<!-- ── 智能匹配 ─────────────────────────────────────────── -->
+<section class="section" id="matcher">
+  <div class="sec-head">
+    <div>
+      <span class="sec-kicker">03 / MATCH</span>
+      <h2 class="sec-title shimmer-text">剧本 · 小说 · 分镜 → 自动匹配画风</h2>
+      <p class="sec-desc">上传文本或直接粘贴，本地解析题材、时代、情绪与媒介倾向，从风格库里给出最合适的 <b>3 种画风</b> 及命中理由。</p>
+    </div>
+  </div>
+
+  <div class="match-wrap">
+    <div class="match-input">
+      <div class="dropzone" id="dropzone" tabindex="0">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V4m0 0L8 8m4-4 4 4"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+        <b>拖入 .txt / .md 剧本文件</b>
+        <span>或点击选择文件 · 文件仅在本地读取，不会上传服务器</span>
+        <input type="file" id="fileInput" accept=".txt,.md,.markdown,.csv,.json,.storyboard,text/plain,text/markdown" hidden />
+      </div>
+
+      <div class="or-line"><span>或直接粘贴内容</span></div>
+
+      <textarea id="scriptInput" class="script-input" spellcheck="false" placeholder="粘贴剧本 / 小说片段 / 分镜表……&#10;&#10;例：&#10;【分镜 01】深夜，霓虹雨夜。女主撑着伞站在天台边缘，风衣被吹起。&#10;旁白：她已经三年没有回过这座城市了。&#10;&#10;支持识别：题材（都市/仙侠/悬疑/末世…）、时代（现代/民国/古代/未来）、情绪（治愈/热血/压抑/甜）、媒介（真人/2D/3D）"></textarea>
+
+      <div class="match-actions">
+        <button class="primary-btn" id="matchBtn"><span class="btn-spark"></span>开始匹配画风</button>
+        <button class="ghost-btn" id="sampleBtn">载入示例剧本</button>
+        <button class="ghost-btn" id="clearBtn">清空</button>
+        <span class="match-hint" id="matchHint">文本越长，匹配越准（建议 300 字以上）</span>
+      </div>
+    </div>
+
+    <div class="match-output" id="matchOutput">
+      <div class="scan-idle" id="scanIdle">
+        <div class="scan-icon">
+          <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+        </div>
+        <p>粘贴或上传内容后开始匹配</p>
+        <span>匹配全部在浏览器本地完成</span>
+      </div>
+      <div class="scan-running" id="scanRunning" hidden>
+        <div class="scan-bar"></div>
+        <div class="scan-steps" id="scanSteps"></div>
+      </div>
+      <div class="match-result" id="matchResult" hidden></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── 我的风格 ─────────────────────────────────────────── -->
+<section class="section" id="mine">
+  <div class="sec-head">
+    <div>
+      <span class="sec-kicker">04 / MINE</span>
+      <h2 class="sec-title shimmer-text">我的风格 · 收藏与最近使用</h2>
+      <p class="sec-desc">全部保存在本机 localStorage，不上传、不追踪。</p>
+    </div>
+    <div class="sec-tools">
+      <button class="ghost-btn" id="clearMineBtn">清空本地记录</button>
+    </div>
+  </div>
+  <div class="grid" id="mineGrid"></div>
+  <div class="empty" id="mineEmpty">还没有收藏，去风格库里点个小心心吧。</div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div>
+      <b>STYLEVAULT</b>
+      <p>AI 视频风格库 · 参考画面语言 · 本地剧本匹配</p>
+    </div>
+    <div class="footer-meta">
+      <span id="footStyles">—</span>
+      <span>纯静态 · 无后端 · 无追踪</span>
+      <a href="https://github.com" target="_blank" rel="noopener">GitHub Pages</a>
+    </div>
+  </div>
+</footer>
+
+<!-- ── 风格详情弹窗 ─────────────────────────────────────── -->
+<div class="modal" id="styleModal" hidden>
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <button class="modal-close" data-close aria-label="关闭">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <div class="modal-body">
+      <div class="modal-media">
+        <img id="modalImg" alt="" />
+        <span class="modal-rarity" id="modalRarity">SR</span>
+      </div>
+      <div class="modal-info">
+        <div class="modal-head">
+          <h3 id="modalTitle">—</h3>
+          <span class="modal-en" id="modalEn"></span>
+        </div>
+        <div class="modal-tags" id="modalTags"></div>
+        <p class="modal-desc" id="modalDesc"></p>
+
+        <div class="swatches" id="modalSwatches"></div>
+
+        <dl class="spec-list" id="modalSpecs"></dl>
+
+        <div class="ref-grid" id="modalRefs" hidden></div>
+
+        <div class="prompt-block">
+          <div class="prompt-head">
+            <span>风格提示词（源站原始描述）</span>
+            <div class="prompt-tools">
+              <button class="mini-btn" id="copyPrompt">复制</button>
+            </div>
+          </div>
+          <p class="prompt-text" id="modalPrompt"></p>
+          <p class="negative-text"><b>负向：</b><span id="modalNegative"></span></p>
+        </div>
+
+        <div class="prompt-block" style="margin-top:12px">
+          <div class="prompt-head">
+            <span>套用模板（填入分镜信息）</span>
+            <div class="prompt-tools">
+              <button class="mini-btn" id="copyTemplate">复制模板</button>
+            </div>
+          </div>
+          <p class="prompt-text" id="modalTemplate"></p>
+        </div>
+
+        <div class="modal-actions">
+          <button class="primary-btn small" id="modalMatchBtn"><span class="btn-spark"></span>用它匹配我的剧本</button>
+          <button class="ghost-btn small" id="modalFavBtn">收藏</button>
+          <button class="ghost-btn small" id="modalDrawBtn">再抽一张</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script src="assets/data/styles.js"></script>
+<script src="assets/js/matcher.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
