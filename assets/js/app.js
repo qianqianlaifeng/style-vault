@@ -304,6 +304,9 @@
     const el = document.createElement('div');
     el.className = 'gacha-card';
     el.dataset.id = s.id;
+    /* 稀有度颜色挂在卡上，卡框光晕才能跟稀有度走 */
+    el.style.setProperty('--rc', r.color);
+    el.style.setProperty('--rg', r.glow);
     el.innerHTML = `
       <div class="face back"><span class="emblem">BM</span></div>
       <div class="face front">
@@ -336,7 +339,7 @@
     $('#tenGrid').hidden = true;
     $('#tenGrid').innerHTML = '';
     $('#gachaRays').classList.remove('on');
-    stage.classList.remove('charging', 'shake');
+    stage.classList.remove('charging', 'shake', 'ten');
     $('#stageActions').hidden = true;
   }
 
@@ -416,6 +419,8 @@
     const grid = $('#tenGrid');
     grid.hidden = false;
     grid.innerHTML = picks.map(() => '<div class="ten-slot"></div>').join('');
+    /* 十连展示时把牌堆 / 光效收起来，换成干净的舞台底，避免压在卡片底下 */
+    stage.classList.add('ten');
     const slots = Array.from(grid.querySelectorAll('.ten-slot'));
     const deckRect = $('#deck').getBoundingClientRect();
 
