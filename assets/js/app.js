@@ -24,7 +24,6 @@
     set(k, v) { try { localStorage.setItem('sv_' + k, JSON.stringify(v)); } catch { /* ignore */ } },
   };
   let favs = new Set(store.get('favs', []));
-  let recent = store.get('recent', []);
   let drawHistory = store.get('draws', []);
 
   /* ---------------- 工具 ---------------- */
@@ -179,11 +178,6 @@
     $('#gridEmpty').hidden = list.length > 0;
   }
 
-  function pushRecent(id) {
-    recent = [id, ...recent.filter((x) => x !== id)].slice(0, 12);
-    store.set('recent', recent);
-  }
-
   function toggleFav(id) {
     if (favs.has(id)) { favs.delete(id); toast('已取消收藏'); }
     else { favs.add(id); toast('已收藏到「我的风格」'); }
@@ -240,7 +234,6 @@
     $('#modalFavBtn').textContent = favs.has(id) ? '已收藏 ✓' : '收藏';
     m.hidden = false;
     document.body.style.overflow = 'hidden';
-    pushRecent(id);
     renderMine();
   }
 
@@ -302,95 +295,158 @@
   }
 
   let drawing = false;
-  function drawOne() {
-    if (drawing) return;
-    drawing = true;
-    const stage = $('#gachaStage');
-    const deck = $('#deck');
-    const status = $('#drawStatus');
-    const rays = $('#gachaRays');
-    deck.classList.add('shuffle');
-    rays.classList.remove('on');
-    status.textContent = '抽取中…';
-    status.classList.add('on');
+  let lastDrawn = null;
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const RANK = { R: 1, SR: 2, SSR: 3 };
 
-    setTimeout(() => {
-      const s = pickRandomStyle();
-      revealCard(s, () => {
-        drawHistory = [{ id: s.id, ts: Date.now() }, ...drawHistory].slice(0, 30);
-        store.set('draws', drawHistory);
-        renderDrawHistory();
-        deck.classList.remove('shuffle');
-        status.textContent = `抽中：${s.name}（${s.rarity}）`;
-        drawing = false;
-      });
-    }, 900);
-  }
-
-  function revealCard(s, done) {
-    const stage = $('#gachaStage');
-    const rays = $('#gachaRays');
+  function buildCard(s) {
     const r = RARITY[s.rarity] || RARITY.R;
-
-    const card = document.createElement('div');
-    card.className = 'draw-card';
-    card.innerHTML = `
-      <div class="face back"></div>
+    const el = document.createElement('div');
+    el.className = 'gacha-card';
+    el.dataset.id = s.id;
+    el.innerHTML = `
+      <div class="face back"><span class="emblem">SV</span></div>
       <div class="face front">
         <img src="${s.thumb}" alt="${escapeHtml(s.name)}" />
-        <span class="cap">${escapeHtml(s.name)}</span>
+        <span class="rarity-tag" style="--rc:${r.color};--rg:${r.glow}">${s.rarity}</span>
+        <div class="plate"><b>${escapeHtml(s.name)}</b><i>${escapeHtml(s.en || s.catLabel)}</i></div>
+        <div class="sheen"></div>
       </div>`;
-    card.style.boxShadow = `0 30px 70px rgba(0,0,0,.65), 0 0 40px ${r.glow}`;
-    stage.appendChild(card);
-
-    requestAnimationFrame(() => {
-      card.classList.add('flip');
-      if (s.rarity === 'SSR') { rays.classList.add('on'); burst(stage, r); }
-      else if (s.rarity === 'SR') { burst(stage, r, 26); }
-    });
-
-    setTimeout(() => {
-      card.classList.remove('flip');
-      setTimeout(() => {
-        card.remove();
-        rays.classList.remove('on');
-        if (done) done();
-      }, 850);
-    }, 1500);
+    return el;
   }
 
-  function drawTen() {
+  function clearStage() {
+    const stage = $('#gachaStage');
+    stage.querySelectorAll('.gacha-card').forEach((c) => c.remove());
+    $('#tenGrid').hidden = true;
+    $('#tenGrid').innerHTML = '';
+    $('#gachaRays').classList.remove('on');
+    stage.classList.remove('charging', 'shake');
+    $('#stageActions').hidden = true;
+  }
+
+  function recordDraw(s) {
+    drawHistory = [{ id: s.id, ts: Date.now() }, ...drawHistory].slice(0, 30);
+    store.set('draws', drawHistory);
+    renderDrawHistory();
+  }
+
+  async function drawOne() {
     if (drawing) return;
     drawing = true;
+    const stage = $('#gachaStage');
     const status = $('#drawStatus');
-    const results = $('#drawResults');
-    status.textContent = '十连抽取中…';
+    clearStage();
     status.classList.add('on');
-    results.hidden = true;
+    status.textContent = '洗牌中…';
+    $('#deck').classList.add('shuffle');
+    stage.classList.add('charging');
+    await sleep(640);
+    $('#deck').classList.remove('shuffle');
+    stage.classList.remove('charging');
+    status.textContent = '抽取中…';
 
-    setTimeout(() => {
-      const picks = [];
-      for (let i = 0; i < 10; i++) picks.push(pickRandomStyle());
-      results.innerHTML = picks.map((s, i) => `
-        <article class="card" data-id="${s.id}" style="animation-delay:${i * 0.06}s" tabindex="0">
-          <div class="card-media">
-            <img src="${s.thumb}" alt="${escapeHtml(s.name)}" loading="lazy" />
-            <div class="card-shade"></div>
-            <span class="badge rarity" style="--rc:${(RARITY[s.rarity] || RARITY.R).color};--rg:${(RARITY[s.rarity] || RARITY.R).glow}">${s.rarity}</span>
-            <h3 class="card-title">${escapeHtml(s.name)}</h3>
-            <span class="card-en">${escapeHtml(s.en || s.catLabel)}</span>
-          </div>
-        </article>`).join('');
-      results.hidden = false;
-      picks.forEach((s) => {
-        drawHistory = [{ id: s.id, ts: Date.now() }, ...drawHistory].slice(0, 30);
-      });
-      store.set('draws', drawHistory);
-      renderDrawHistory();
-      status.textContent = `十连完成：最高稀有度 ${picks.reduce((a, b) => (['R', 'SR', 'SSR'].indexOf(b.rarity) > ['R', 'SR', 'SSR'].indexOf(a.rarity) ? b : a)).rarity}`;
-      drawing = false;
-      results.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }, 900);
+    const s = pickRandomStyle();
+    lastDrawn = s;
+    const r = RARITY[s.rarity] || RARITY.R;
+    const card = buildCard(s);
+    stage.appendChild(card);
+
+    // 从牌堆飞出 → 翻面 → 落位
+    await card.animate([
+      { transform: 'translate3d(0, 48px, 0) scale(0.4) rotate(-9deg) rotateY(0deg)', opacity: 0.15 },
+      { transform: 'translate3d(0, 12px, 0) scale(0.86) rotate(0deg) rotateY(0deg)', opacity: 1, offset: 0.3 },
+      { transform: 'translate3d(0, -16px, 0) scale(1.05) rotate(0deg) rotateY(180deg)', opacity: 1, offset: 0.78 },
+      { transform: 'translate3d(0, -26px, 0) scale(1) rotate(0deg) rotateY(180deg)', opacity: 1 },
+    ], { duration: 1150, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'forwards' }).finished;
+
+    card.classList.add('revealed');
+    card.style.boxShadow = `0 26px 60px rgba(0,0,0,.72), 0 0 48px ${r.glow}`;
+    if (s.rarity === 'SSR') {
+      $('#gachaRays').classList.add('on');
+      stage.classList.add('shake');
+      burst(stage, r, 100);
+    } else if (s.rarity === 'SR') {
+      burst(stage, r, 46);
+    } else {
+      burst(stage, r, 16);
+    }
+    status.textContent = `${s.rarity} · ${r.label} · ${s.name}　—　${s.catLabel}`;
+    $('#stageActions').hidden = false;
+    $('#stageFav').textContent = favs.has(s.id) ? '已收藏 ✓' : '收藏';
+    recordDraw(s);
+    drawing = false;
+  }
+
+  async function drawTen() {
+    if (drawing) return;
+    drawing = true;
+    const stage = $('#gachaStage');
+    const status = $('#drawStatus');
+    clearStage();
+    status.classList.add('on');
+    status.textContent = '十连抽取中…';
+    $('#deck').classList.add('shuffle');
+    stage.classList.add('charging');
+    await sleep(720);
+    $('#deck').classList.remove('shuffle');
+    stage.classList.remove('charging');
+    status.textContent = '发牌中…';
+
+    const picks = [];
+    for (let i = 0; i < 10; i++) picks.push(pickRandomStyle());
+
+    const grid = $('#tenGrid');
+    grid.hidden = false;
+    grid.innerHTML = picks.map(() => '<div class="ten-slot"></div>').join('');
+    const slots = Array.from(grid.querySelectorAll('.ten-slot'));
+    const deckRect = $('#deck').getBoundingClientRect();
+
+    const anims = picks.map((s, i) => {
+      const card = buildCard(s);
+      const slot = slots[i];
+      slot.appendChild(card);
+      const sr = slot.getBoundingClientRect();
+      const dx = (deckRect.left + deckRect.width / 2) - (sr.left + sr.width / 2);
+      const dy = (deckRect.top + deckRect.height / 2) - (sr.top + sr.height / 2);
+      const a = card.animate([
+        { transform: `translate3d(${dx}px, ${dy}px, 0) scale(1.02) rotate(0deg) rotateY(0deg)`, opacity: 0.25 },
+        { transform: `translate3d(${dx * 0.2}px, ${dy * 0.2 - 14}px, 0) scale(1.05) rotate(0deg) rotateY(180deg)`, opacity: 1, offset: 0.7 },
+        { transform: 'translate3d(0,0,0) scale(1) rotate(0deg) rotateY(180deg)', opacity: 1 },
+      ], { duration: 640, delay: i * 115, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'both' });
+      a.finished.then(() => card.classList.add('revealed')).catch(() => {});
+      return a.finished.catch(() => {});
+    });
+    await Promise.all(anims);
+
+    const best = picks.reduce((a, b) => ((RANK[b.rarity] || 0) > (RANK[a.rarity] || 0) ? b : a), picks[0]);
+    const r = RARITY[best.rarity] || RARITY.R;
+    if (best.rarity === 'SSR') {
+      $('#gachaRays').classList.add('on');
+      stage.classList.add('shake');
+      burst(stage, r, 120);
+    } else if (best.rarity === 'SR') {
+      burst(stage, r, 54);
+    }
+    status.textContent = `十连完成 · 最高 ${best.rarity} ${best.name}`;
+    picks.forEach(recordDraw);
+    renderDrawResults(picks);
+    drawing = false;
+  }
+
+  function renderDrawResults(picks) {
+    const results = $('#drawResults');
+    results.hidden = false;
+    results.innerHTML = picks.map((s, i) => `
+      <article class="card" data-id="${s.id}" style="animation-delay:${i * 0.06}s" tabindex="0">
+        <div class="card-media">
+          <img src="${s.thumb}" alt="${escapeHtml(s.name)}" loading="lazy" />
+          <div class="card-shade"></div>
+          <span class="badge rarity" style="--rc:${(RARITY[s.rarity] || RARITY.R).color};--rg:${(RARITY[s.rarity] || RARITY.R).glow}">${s.rarity}</span>
+          <h3 class="card-title">${escapeHtml(s.name)}</h3>
+          <span class="card-en">${escapeHtml(s.en || s.catLabel)}</span>
+        </div>
+      </article>`).join('');
   }
 
   function renderDrawHistory() {
@@ -572,10 +628,9 @@
     toast('已生成 3 种推荐画风');
   }
 
-  /* ---------------- 我的风格 ---------------- */
+  /* ---------------- 我的风格（仅收藏） ---------------- */
   function renderMine() {
-    const ids = [...favs, ...recent.filter((id) => !favs.has(id))];
-    const list = ids.map((id) => byId.get(id)).filter(Boolean);
+    const list = [...favs].map((id) => byId.get(id)).filter(Boolean);
     $('#mineGrid').innerHTML = list.map((s, i) => cardHTML(s, i)).join('');
     $('#mineEmpty').hidden = list.length > 0;
     updateFavCount();
@@ -637,11 +692,25 @@
 
     $('#drawOneBtn').addEventListener('click', drawOne);
     $('#drawTenBtn').addEventListener('click', drawTen);
+
+    // 抽卡台交互
+    $('#gachaStage').addEventListener('click', (e) => {
+      const card = e.target.closest('.gacha-card');
+      if (card) openModal(card.dataset.id);
+    });
+    $('#stageDetail').addEventListener('click', () => { if (lastDrawn) openModal(lastDrawn.id); });
+    $('#stageFav').addEventListener('click', () => {
+      if (!lastDrawn) return;
+      toggleFav(lastDrawn.id);
+      $('#stageFav').textContent = favs.has(lastDrawn.id) ? '已收藏 ✓' : '收藏';
+    });
+    $('#stageAgain').addEventListener('click', drawOne);
+
     $('#navDrawBtn').addEventListener('click', () => { scrollTo$('#gacha'); setTimeout(drawOne, 420); });
     $('#navFavBtn').addEventListener('click', () => scrollTo$('#mine'));
     $('#clearMineBtn').addEventListener('click', () => {
-      favs = new Set(); recent = []; store.set('favs', []); store.set('recent', []);
-      renderMine(); toast('已清空本地收藏与记录');
+      favs = new Set(); store.set('favs', []);
+      renderMine(); toast('已清空本地收藏');
     });
 
     $$('[data-scroll]').forEach((b) => b.addEventListener('click', () => scrollTo$(b.dataset.scroll)));

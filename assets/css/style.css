@@ -528,6 +528,14 @@ code { font-family: var(--mono); font-size: 0.92em; }
 @keyframes spin-rays { to { transform: rotate(360deg); } }
 
 .deck { position: relative; width: 210px; height: 300px; perspective: 1200px; }
+.deck-emblem {
+  position: absolute; inset: 0; z-index: 3;
+  display: grid; place-items: center;
+  font-size: 26px; font-weight: 900; letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.22);
+  text-shadow: 0 0 22px rgba(167, 139, 250, 0.55);
+  pointer-events: none;
+}
 .deck-card {
   position: absolute; inset: 0; border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.16);
@@ -564,39 +572,116 @@ code { font-family: var(--mono); font-size: 0.92em; }
   background: radial-gradient(circle, rgba(142, 81, 255, 0.4), transparent 66%);
   filter: blur(30px); opacity: 0.55;
 }
+.charge-ring {
+  position: absolute; width: 250px; height: 250px; border-radius: 50%;
+  border: 2px solid rgba(167, 139, 250, 0.65);
+  box-shadow: 0 0 40px rgba(167, 139, 250, 0.45), inset 0 0 30px rgba(167, 139, 250, 0.22);
+  opacity: 0; transform: scale(0.35);
+  transition: opacity 0.45s, transform 0.85s var(--ease);
+  pointer-events: none;
+}
+.gacha-stage.charging .charge-ring { opacity: 1; transform: scale(1); }
+.gacha-stage.charging .deck { filter: drop-shadow(0 0 26px rgba(167, 139, 250, 0.75)); }
+.gacha-stage.charging .deck-card { animation: charge 0.7s ease-in-out infinite; }
+@keyframes charge {
+  0%, 100% { transform: rotate(-4deg) translateY(-2px) scale(1); }
+  50% { transform: rotate(4deg) translateY(-10px) scale(1.04); }
+}
 .draw-status {
   position: absolute; bottom: 22px; left: 0; right: 0;
   text-align: center; font-size: 13.5px; color: var(--muted-fg);
   letter-spacing: 0.04em;
+  transition: color 0.3s;
 }
 .draw-status.on { color: var(--fg); }
+.stage-actions {
+  position: absolute; right: 18px; bottom: 16px; z-index: 12;
+  display: flex; gap: 8px;
+}
 
-/* 抽出的卡 */
-.draw-card {
-  position: absolute; top: 50%; left: 50%;
-  width: 210px; height: 300px; margin: -150px 0 0 -105px;
-  transform-style: preserve-3d;
-  transition: transform 0.85s var(--ease);
-  z-index: 6;
+/* 抽出的卡（单抽 / 十连通用） */
+.gacha-card { position: absolute; transform-style: preserve-3d; z-index: 8; cursor: pointer; }
+.gacha-stage > .gacha-card {
+  width: 230px; height: 322px; left: 50%; top: 50%;
+  margin-left: -115px; margin-top: -161px;
 }
-.draw-card.flip { transform: rotateY(180deg); }
-.draw-card .face {
-  position: absolute; inset: 0; border-radius: 14px; overflow: hidden;
-  backface-visibility: hidden; border: 1px solid rgba(255, 255, 255, 0.14);
+.gacha-card .face {
+  position: absolute; inset: 0; border-radius: 15px; overflow: hidden;
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.14);
 }
-.draw-card .front { transform: rotateY(180deg); background: #111; }
-.draw-card .front img { width: 100%; height: 100%; object-fit: cover; }
-.draw-card .back {
+.gacha-card .back {
   background:
-    radial-gradient(circle at 30% 25%, rgba(167, 139, 250, 0.5), transparent 55%),
-    radial-gradient(circle at 75% 80%, rgba(69, 214, 255, 0.4), transparent 55%),
-    linear-gradient(150deg, #26262b, #151518);
+    radial-gradient(circle at 30% 25%, rgba(167, 139, 250, 0.55), transparent 55%),
+    radial-gradient(circle at 75% 80%, rgba(69, 214, 255, 0.45), transparent 55%),
+    linear-gradient(150deg, #2a2a30, #141417);
+  display: grid; place-items: center;
 }
-.draw-card .front .cap {
-  position: absolute; left: 0; right: 0; bottom: 0;
-  padding: 10px 12px; font-size: 14px; font-weight: 700;
-  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.88));
+.gacha-card .back::before {
+  content: "";
+  position: absolute; inset: 12px; border-radius: 10px;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  background-image: radial-gradient(rgba(255, 255, 255, 0.14) 1.4px, transparent 1.4px);
+  background-size: 15px 15px;
 }
+.gacha-card .back .emblem {
+  position: relative; z-index: 2;
+  font-size: 30px; font-weight: 900; letter-spacing: 0.16em;
+  color: rgba(255, 255, 255, 0.26);
+  text-shadow: 0 0 24px rgba(167, 139, 250, 0.6);
+}
+.gacha-card .front { transform: rotateY(180deg); background: #0f0f11; }
+.gacha-card .front img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.gacha-card .rarity-tag {
+  position: absolute; top: 12px; left: 12px; z-index: 3;
+  padding: 4px 11px; border-radius: 999px;
+  font-size: 11.5px; font-weight: 800; letter-spacing: 0.06em;
+  color: var(--rc, #fff);
+  background: rgba(8, 8, 10, 0.72);
+  border: 1px solid var(--rc, #fff);
+  box-shadow: 0 0 16px var(--rg, transparent);
+  backdrop-filter: blur(6px);
+  opacity: 0; transform: translateY(-8px);
+  transition: all 0.45s var(--ease) 0.12s;
+}
+.gacha-card .plate {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 3;
+  padding: 26px 16px 15px;
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.92));
+  opacity: 0; transform: translateY(16px);
+  transition: all 0.5s var(--ease) 0.16s;
+}
+.gacha-card .plate b { display: block; font-size: 17px; font-weight: 800; letter-spacing: 0.02em; }
+.gacha-card .plate i { display: block; font-style: normal; font-size: 11.5px; color: rgba(255, 255, 255, 0.62); margin-top: 2px; }
+.gacha-card.revealed .rarity-tag,
+.gacha-card.revealed .plate { opacity: 1; transform: none; }
+.gacha-card .sheen {
+  position: absolute; inset: 0; z-index: 4; pointer-events: none;
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.42) 48%, transparent 62%);
+  transform: translateX(-120%);
+}
+.gacha-card.revealed .sheen { animation: sheen 0.9s var(--ease) 0.1s; }
+@keyframes sheen { to { transform: translateX(120%); } }
+
+/* 十连 */
+.ten-grid {
+  position: absolute; inset: 0; z-index: 7;
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  gap: 12px; padding: 22px 28px 70px;
+  align-content: center; justify-items: center;
+}
+.ten-slot {
+  position: relative; width: 100%; max-width: 132px; aspect-ratio: 2 / 3;
+  border-radius: 11px; overflow: hidden;
+  background: #101012; border: 1px solid rgba(255, 255, 255, 0.09);
+}
+.ten-slot .gacha-card { position: absolute; inset: 0; width: auto; height: auto; margin: 0; }
+.ten-slot .gacha-card .face { border-radius: 11px; }
+.ten-slot .gacha-card .plate { padding: 16px 9px 8px; }
+.ten-slot .gacha-card .plate b { font-size: 11.5px; }
+.ten-slot .gacha-card .plate i { display: none; }
+.ten-slot .gacha-card .rarity-tag { top: 7px; left: 7px; padding: 2px 7px; font-size: 9.5px; }
+
 .shake { animation: shake 0.42s var(--ease-soft); }
 @keyframes shake {
   0%, 100% { transform: translate(0, 0); }
@@ -829,6 +914,13 @@ code { font-family: var(--mono); font-size: 0.92em; }
 .footer-inner b { letter-spacing: 0.14em; }
 .footer-inner p { margin: 6px 0 0; color: var(--muted-fg); font-size: 13px; }
 .footer-meta { display: flex; gap: 18px; align-items: center; color: var(--muted-fg); font-size: 13px; }
+.footer-credit {
+  padding: 5px 14px; border-radius: 999px;
+  color: #d9c9ff;
+  background: linear-gradient(120deg, rgba(167, 139, 250, 0.14), rgba(124, 179, 255, 0.12));
+  border: 1px solid rgba(167, 139, 250, 0.32);
+  letter-spacing: 0.04em;
+}
 .footer-meta a { color: var(--primary); }
 .footer-meta a:hover { text-decoration: underline; }
 

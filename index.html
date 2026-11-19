@@ -142,14 +142,21 @@
     <div class="gacha-stage" id="gachaStage">
       <canvas class="gacha-fx" id="gachaFx"></canvas>
       <div class="rays" id="gachaRays"></div>
+      <div class="charge-ring" id="chargeRing"></div>
       <div class="deck" id="deck">
         <div class="deck-card back c1"></div>
         <div class="deck-card back c2"></div>
         <div class="deck-card back c3"></div>
         <div class="deck-card back c4"></div>
+        <span class="deck-emblem">SV</span>
       </div>
-      <div class="deck-glow"></div>
+      <div class="ten-grid" id="tenGrid" hidden></div>
       <div class="draw-status" id="drawStatus">准备就绪 · 点击「抽 1 张」开始</div>
+      <div class="stage-actions" id="stageActions" hidden>
+        <button class="mini-btn" id="stageDetail">查看详情</button>
+        <button class="mini-btn" id="stageFav">收藏</button>
+        <button class="mini-btn" id="stageAgain">再抽一张</button>
+      </div>
     </div>
 
     <aside class="gacha-side">
@@ -230,8 +237,8 @@
   <div class="sec-head">
     <div>
       <span class="sec-kicker">04 / MINE</span>
-      <h2 class="sec-title shimmer-text">我的风格 · 收藏与最近使用</h2>
-      <p class="sec-desc">全部保存在本机 localStorage，不上传、不追踪。</p>
+      <h2 class="sec-title shimmer-text">我的风格 · 我的收藏</h2>
+      <p class="sec-desc">在风格库里点小心心收藏的画风，都会出现在这里，随时回看与取用。</p>
     </div>
     <div class="sec-tools">
       <button class="ghost-btn" id="clearMineBtn">清空本地记录</button>
@@ -251,7 +258,7 @@
     </div>
     <div class="footer-meta">
       <span id="footStyles">—</span>
-      <span>纯静态 · 无后端 · 无追踪</span>
+      <span class="footer-credit">本站由梦-浅浅来风搭建制作</span>
       <a href="https://github.com" target="_blank" rel="noopener">GitHub Pages</a>
     </div>
   </div>
