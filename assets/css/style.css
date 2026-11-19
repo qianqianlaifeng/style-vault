@@ -1,5 +1,5 @@
 /* ============================================================
-   StyleVault · 设计系统
+   BAIRIMENG-FG · 设计系统
    视觉语言参考 zeekeai.com：暗色玻璃、紫蓝渐变、shimmer 文字、微光扫掠
    ============================================================ */
 
@@ -511,6 +511,9 @@ code { font-family: var(--mono); font-size: 0.92em; }
   border: 1px solid var(--border-soft);
   overflow: hidden;
   display: grid; place-items: center;
+  /* 关键：建立 3D 翻转上下文，卡面正/背面才能靠 backface-visibility 互斥 */
+  perspective: 1400px;
+  perspective-origin: 50% 42%;
 }
 .gacha-fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .rays {
@@ -611,6 +614,8 @@ code { font-family: var(--mono); font-size: 0.92em; }
   border: 1px solid rgba(255, 255, 255, 0.14);
 }
 .gacha-card .back {
+  /* 显式 3D 变换，确保 backface-visibility 生效 */
+  transform: rotateY(0deg);
   background:
     radial-gradient(circle at 30% 25%, rgba(167, 139, 250, 0.55), transparent 55%),
     radial-gradient(circle at 75% 80%, rgba(69, 214, 255, 0.45), transparent 55%),
@@ -655,6 +660,9 @@ code { font-family: var(--mono); font-size: 0.92em; }
 .gacha-card .plate i { display: block; font-style: normal; font-size: 11.5px; color: rgba(255, 255, 255, 0.62); margin-top: 2px; }
 .gacha-card.revealed .rarity-tag,
 .gacha-card.revealed .plate { opacity: 1; transform: none; }
+/* 翻面终态（同时作为弱动效/无动画时的兜底状态） */
+.gacha-card.revealed .face.back { transform: rotateY(180deg); }
+.gacha-card.revealed .face.front { transform: rotateY(360deg); }
 .gacha-card .sheen {
   position: absolute; inset: 0; z-index: 4; pointer-events: none;
   background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.42) 48%, transparent 62%);
@@ -672,8 +680,10 @@ code { font-family: var(--mono); font-size: 0.92em; }
 }
 .ten-slot {
   position: relative; width: 100%; max-width: 132px; aspect-ratio: 2 / 3;
-  border-radius: 11px; overflow: hidden;
+  border-radius: 11px;
   background: #101012; border: 1px solid rgba(255, 255, 255, 0.09);
+  /* 不做 overflow 裁剪，避免把卡面的 3D 上下文拍平 */
+  perspective: 640px;
 }
 .ten-slot .gacha-card { position: absolute; inset: 0; width: auto; height: auto; margin: 0; }
 .ten-slot .gacha-card .face { border-radius: 11px; }

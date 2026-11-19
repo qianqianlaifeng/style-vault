@@ -1,4 +1,4 @@
-/** StyleVault · 本地静态服务器（测试用） */
+/** BAIRIMENG-FG · 本地静态服务器（测试用） */
 import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { resolve, extname, dirname, normalize } from 'node:path';
@@ -27,4 +27,4 @@ createServer(async (req, res) => {
   } catch {
     res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }).end('not found');
   }
-}).listen(PORT, '127.0.0.1', () => console.log(`StyleVault dev server → http://127.0.0.1:${PORT}`));
+}).listen(PORT, '127.0.0.1', () => console.log(`BAIRIMENG-FG dev server → http://127.0.0.1:${PORT}`));

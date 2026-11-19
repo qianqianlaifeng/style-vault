@@ -1,5 +1,5 @@
 /**
- * StyleVault · 把 oiioii.tv 风格库原始数据转换成站点数据模型
+ * BAIRIMENG-FG · 把 oiioii.tv 风格库原始数据转换成站点数据模型
  * 用法: node tools/build-styles.mjs
  * 产出: assets/data/styles.js
  */
@@ -173,7 +173,7 @@ const styles = items.map((it) => {
 });
 
 const out = `/**
- * StyleVault · 风格库数据（来源：oiioii.tv 风格库 / knowledge/style_assets）
+ * BAIRIMENG-FG · 风格库数据（来源：oiioii.tv 风格库 / knowledge/style_assets）
  * 自动生成于 tools/build-styles.mjs，请勿手改
  */
 window.STYLE_CATEGORIES = ${JSON.stringify(CATS, null, 2)};

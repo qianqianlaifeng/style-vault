@@ -1,5 +1,5 @@
 /**
- * StyleVault · 从 oiioii.tv 风格库拉取全量数据 + 下载参考图
+ * BAIRIMENG-FG · 从 oiioii.tv 风格库拉取全量数据 + 下载参考图
  * 用法: node tools/fetch-styles.mjs
  */
 import { writeFileSync, mkdirSync, existsSync, statSync } from 'node:fs';

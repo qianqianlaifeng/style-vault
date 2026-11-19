@@ -1,5 +1,5 @@
 /**
- * StyleVault · 风格库数据（来源：oiioii.tv 风格库 / knowledge/style_assets）
+ * BAIRIMENG-FG · 风格库数据（来源：oiioii.tv 风格库 / knowledge/style_assets）
  * 自动生成于 tools/build-styles.mjs，请勿手改
  */
 window.STYLE_CATEGORIES = [

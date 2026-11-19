@@ -1,5 +1,5 @@
 /* ============================================================
-   StyleVault · 应用主逻辑
+   BAIRIMENG-FG · 应用主逻辑
    纯静态站点：风格库 / 抽卡 / 剧本匹配 / 我的风格
    ============================================================ */
 (function () {
@@ -305,7 +305,7 @@
     el.className = 'gacha-card';
     el.dataset.id = s.id;
     el.innerHTML = `
-      <div class="face back"><span class="emblem">SV</span></div>
+      <div class="face back"><span class="emblem">BM</span></div>
       <div class="face front">
         <img src="${s.thumb}" alt="${escapeHtml(s.name)}" />
         <span class="rarity-tag" style="--rc:${r.color};--rg:${r.glow}">${s.rarity}</span>
@@ -313,6 +313,21 @@
         <div class="sheen"></div>
       </div>`;
     return el;
+  }
+
+  // 卡面各自翻转：背面 0°→180°，正面 180°→360°。
+  // 这样 backface-visibility 只依据卡面自身变换判定，正反面互斥稳定可靠。
+  function flipFaces(card, duration, delay, easing) {
+    const opts = { duration, delay, easing, fill: 'both' };
+    const back = card.querySelector('.face.back').animate(
+      [{ transform: 'rotateY(0deg)' }, { transform: 'rotateY(180deg)' }],
+      opts
+    );
+    const front = card.querySelector('.face.front').animate(
+      [{ transform: 'rotateY(180deg)' }, { transform: 'rotateY(360deg)' }],
+      opts
+    );
+    return Promise.all([back.finished.catch(() => {}), front.finished.catch(() => {})]);
   }
 
   function clearStage() {
@@ -353,12 +368,14 @@
     stage.appendChild(card);
 
     // 从牌堆飞出 → 翻面 → 落位
-    await card.animate([
-      { transform: 'translate3d(0, 48px, 0) scale(0.4) rotate(-9deg) rotateY(0deg)', opacity: 0.15 },
-      { transform: 'translate3d(0, 12px, 0) scale(0.86) rotate(0deg) rotateY(0deg)', opacity: 1, offset: 0.3 },
-      { transform: 'translate3d(0, -16px, 0) scale(1.05) rotate(0deg) rotateY(180deg)', opacity: 1, offset: 0.78 },
-      { transform: 'translate3d(0, -26px, 0) scale(1) rotate(0deg) rotateY(180deg)', opacity: 1 },
-    ], { duration: 1150, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'forwards' }).finished;
+    const EASE = 'cubic-bezier(.22,1,.36,1)';
+    const flight = card.animate([
+      { transform: 'translate3d(0, 48px, 0) scale(0.4) rotate(-9deg)', opacity: 0.15 },
+      { transform: 'translate3d(0, 12px, 0) scale(0.86) rotate(0deg)', opacity: 1, offset: 0.3 },
+      { transform: 'translate3d(0, -16px, 0) scale(1.05) rotate(0deg)', opacity: 1, offset: 0.78 },
+      { transform: 'translate3d(0, -26px, 0) scale(1) rotate(0deg)', opacity: 1 },
+    ], { duration: 1150, easing: EASE, fill: 'forwards' });
+    await Promise.all([flight.finished.catch(() => {}), flipFaces(card, 1150, 0, EASE)]);
 
     card.classList.add('revealed');
     card.style.boxShadow = `0 26px 60px rgba(0,0,0,.72), 0 0 48px ${r.glow}`;
@@ -402,6 +419,7 @@
     const slots = Array.from(grid.querySelectorAll('.ten-slot'));
     const deckRect = $('#deck').getBoundingClientRect();
 
+    const EASE = 'cubic-bezier(.22,1,.36,1)';
     const anims = picks.map((s, i) => {
       const card = buildCard(s);
       const slot = slots[i];
@@ -409,13 +427,16 @@
       const sr = slot.getBoundingClientRect();
       const dx = (deckRect.left + deckRect.width / 2) - (sr.left + sr.width / 2);
       const dy = (deckRect.top + deckRect.height / 2) - (sr.top + sr.height / 2);
+      const delay = i * 115;
       const a = card.animate([
-        { transform: `translate3d(${dx}px, ${dy}px, 0) scale(1.02) rotate(0deg) rotateY(0deg)`, opacity: 0.25 },
-        { transform: `translate3d(${dx * 0.2}px, ${dy * 0.2 - 14}px, 0) scale(1.05) rotate(0deg) rotateY(180deg)`, opacity: 1, offset: 0.7 },
-        { transform: 'translate3d(0,0,0) scale(1) rotate(0deg) rotateY(180deg)', opacity: 1 },
-      ], { duration: 640, delay: i * 115, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'both' });
+        { transform: `translate3d(${dx}px, ${dy}px, 0) scale(1.02) rotate(0deg)`, opacity: 0.25 },
+        { transform: `translate3d(${dx * 0.2}px, ${dy * 0.2 - 14}px, 0) scale(1.05) rotate(0deg)`, opacity: 1, offset: 0.7 },
+        { transform: 'translate3d(0,0,0) scale(1) rotate(0deg)', opacity: 1 },
+      ], { duration: 640, delay, easing: EASE, fill: 'both' });
+      const flip = flipFaces(card, 640, delay, EASE);
       a.finished.then(() => card.classList.add('revealed')).catch(() => {});
-      return a.finished.catch(() => {});
+      flip.then(() => card.classList.add('revealed')).catch(() => {});
+      return Promise.all([a.finished.catch(() => {}), flip]);
     });
     await Promise.all(anims);
 

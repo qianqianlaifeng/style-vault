@@ -1,5 +1,5 @@
 /**
- * StyleVault · 参考图批量生成 / 下载脚本
+ * BAIRIMENG-FG · 参考图批量生成 / 下载脚本
  * 用法: node tools/gen-thumbs.mjs [--batch 5] [--only id1,id2]
  * 幂等: 已存在的缩略图会跳过, 可中断后继续
  */

@@ -1,5 +1,5 @@
 /**
- * StyleVault · 图片压缩（ffmpeg）—— 主图 420px / 参考图 300px
+ * BAIRIMENG-FG · 图片压缩（ffmpeg）—— 主图 420px / 参考图 300px
  * 用法: node tools/compress.mjs
  */
 import { readdirSync, statSync, renameSync, unlinkSync, existsSync } from 'node:fs';

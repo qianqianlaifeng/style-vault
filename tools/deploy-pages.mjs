@@ -1,5 +1,5 @@
 /**
- * StyleVault · 通过 GitHub REST API 部署到 GitHub Pages（无 git CLI 环境下）
+ * BAIRIMENG-FG · 通过 GitHub REST API 部署到 GitHub Pages（无 git CLI 环境下）
  * 用法: node tools/deploy-pages.mjs [repoName]
  */
 import { readFileSync, readdirSync, statSync, existsSync, writeFileSync } from 'node:fs';
@@ -28,7 +28,7 @@ const H = {
   Authorization: `Basic ${Buffer.from(`${user}:${token}`).toString('base64')}`,
   Accept: 'application/vnd.github+json',
   'X-GitHub-Api-Version': '2022-11-28',
-  'User-Agent': 'stylevault-deploy',
+  'User-Agent': 'bairimeng-fg-deploy',
   'Content-Type': 'application/json',
 };
 
@@ -98,7 +98,7 @@ try {
   if (!/404/.test(e.message)) throw e;
   repoInfo = await api('/user/repos', 'POST', {
     name: REPO,
-    description: 'STYLEVAULT · AI 视频风格库：一图一画风，抽卡找灵感，剧本自动匹配画风',
+    description: 'BAIRIMENG-FG · AI 视频风格库：一图一画风，抽卡找灵感，剧本自动匹配画风',
     private: false,
     auto_init: true,
     has_issues: false,
@@ -148,7 +148,7 @@ try { ref = await api(`/repos/${owner}/${REPO}/git/ref/heads/main`); } catch { /
 let commitSha;
 try {
   const commit = await api(`/repos/${owner}/${REPO}/git/commits`, 'POST', {
-    message: 'feat: STYLEVAULT AI 视频风格库（185 套画风 / 抽卡 / 剧本匹配）',
+    message: 'feat: BAIRIMENG-FG AI 视频风格库（185 套画风 / 抽卡 / 剧本匹配）',
     tree: treeRes.sha,
     parents: ref ? [ref.object.sha] : [],
   });
