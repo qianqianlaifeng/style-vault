@@ -505,17 +505,54 @@ code { font-family: var(--mono); font-size: 0.92em; }
 .gacha-stage {
   position: relative;
   min-height: 460px; border-radius: var(--r-xl);
+  /* 舞台底：上浅下深的哑光渐变 + 顶部一线冷光，收掉原来那团过重的紫色雾 */
   background:
-    radial-gradient(ellipse 70% 55% at 50% 38%, rgba(142, 81, 255, 0.16), transparent 70%),
-    linear-gradient(160deg, #1c1c1e, #171717);
+    radial-gradient(120% 62% at 50% -14%, rgba(124, 179, 255, 0.11), transparent 62%),
+    radial-gradient(96% 58% at 50% 112%, rgba(142, 81, 255, 0.08), transparent 66%),
+    linear-gradient(180deg, #1b1b1e 0%, #151517 56%, #101012 100%);
   border: 1px solid var(--border-soft);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.055),
+    inset 0 -70px 90px -60px rgba(0, 0, 0, 0.65);
   overflow: hidden;
   display: grid; place-items: center;
   /* 关键：建立 3D 翻转上下文，卡面正/背面才能靠 backface-visibility 互斥 */
   perspective: 1400px;
   perspective-origin: 50% 42%;
 }
+/* 舞台内的细点阵：只在中央淡淡浮现，给空舞台一点材质感 */
+.gacha-stage::before {
+  content: "";
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 24px 24px;
+  mask-image: radial-gradient(ellipse 76% 68% at 50% 46%, #000 6%, transparent 74%);
+  -webkit-mask-image: radial-gradient(ellipse 76% 68% at 50% 46%, #000 6%, transparent 74%);
+  opacity: 0.65;
+}
 .gacha-fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+/* 十连展示时：牌堆收起、光效让位，换成更干净的舞台底，避免光环和牌堆压在卡片底下 */
+.gacha-stage .deck,
+.gacha-stage .rays,
+.gacha-stage .charge-ring { transition: opacity 0.4s var(--ease), visibility 0.4s var(--ease); }
+.gacha-stage.ten .deck,
+.gacha-stage.ten .rays,
+.gacha-stage.ten .charge-ring { opacity: 0; visibility: hidden; pointer-events: none; }
+.gacha-stage.ten {
+  /* 十连时不再固定高度，交给网格撑开，第一排就不会顶到面板上沿 */
+  display: block;
+  min-height: 0;
+  background:
+    radial-gradient(112% 60% at 50% -16%, rgba(124, 179, 255, 0.1), transparent 64%),
+    radial-gradient(100% 66% at 50% 110%, rgba(142, 81, 255, 0.075), transparent 68%),
+    linear-gradient(180deg, #19191c 0%, #131315 58%, #0f0f11 100%);
+}
+/* 十连翻牌中给网格一层淡淡的进场呼吸 */
+.gacha-stage.ten .ten-grid { animation: ten-in 0.5s var(--ease) both; }
+@keyframes ten-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
 .rays {
   position: absolute; width: 620px; height: 620px; border-radius: 50%;
   opacity: 0; transition: opacity 0.5s;
@@ -531,6 +568,16 @@ code { font-family: var(--mono); font-size: 0.92em; }
 @keyframes spin-rays { to { transform: rotate(360deg); } }
 
 .deck { position: relative; width: 210px; height: 300px; perspective: 1200px; }
+/* 舞台里的牌堆改成绝对居中，十连切换布局时不会跑位 */
+.gacha-stage > .deck {
+  position: absolute; left: 50%; top: 50%;
+  margin: -150px 0 0 -105px; z-index: 1;
+}
+/* 单抽落位后把牌堆收起来，别让旋转的牌堆剪影从卡片背后透出来 */
+.gacha-stage:has(> .gacha-card) .deck {
+  opacity: 0; visibility: hidden;
+  transition-delay: 0.4s;
+}
 .deck-emblem {
   position: absolute; inset: 0; z-index: 3;
   display: grid; place-items: center;
@@ -675,15 +722,31 @@ code { font-family: var(--mono); font-size: 0.92em; }
 .ten-grid {
   position: absolute; inset: 0; z-index: 7;
   display: grid; grid-template-columns: repeat(5, 1fr);
-  gap: 12px; padding: 22px 28px 70px;
+  gap: 16px;
+  /* 顶部留足间隔，别让第一排贴着面板上沿 */
+  padding: 44px 30px 70px;
   align-content: center; justify-items: center;
+}
+/* 十连时改成随内容撑高：顶部间隔固定 44px，不会被居中溢出吃掉 */
+.gacha-stage.ten .ten-grid {
+  position: relative; inset: auto;
+  width: 100%;
+  padding: 44px 30px 70px;
+  align-content: start;
 }
 .ten-slot {
   position: relative; width: 100%; max-width: 132px; aspect-ratio: 2 / 3;
-  border-radius: 11px;
+  border-radius: 12px;
   background: #101012; border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.45);
+  transition: transform 0.28s var(--ease), border-color 0.28s var(--ease), box-shadow 0.28s var(--ease);
   /* 不做 overflow 裁剪，避免把卡面的 3D 上下文拍平 */
   perspective: 640px;
+}
+.ten-slot:hover {
+  transform: translateY(-5px);
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow: 0 20px 34px rgba(0, 0, 0, 0.55);
 }
 .ten-slot .gacha-card { position: absolute; inset: 0; width: auto; height: auto; margin: 0; }
 .ten-slot .gacha-card .face { border-radius: 11px; }
@@ -691,6 +754,10 @@ code { font-family: var(--mono); font-size: 0.92em; }
 .ten-slot .gacha-card .plate b { font-size: 11.5px; }
 .ten-slot .gacha-card .plate i { display: none; }
 .ten-slot .gacha-card .rarity-tag { top: 7px; left: 7px; padding: 2px 7px; font-size: 9.5px; }
+/* 翻开后按稀有度给卡框描一圈光，SSR 更亮眼 */
+.ten-slot .gacha-card.revealed .face.front {
+  box-shadow: 0 0 0 1px var(--rc, rgba(255, 255, 255, 0.18)), 0 0 18px var(--rg, transparent);
+}
 
 .shake { animation: shake 0.42s var(--ease-soft); }
 @keyframes shake {
@@ -959,6 +1026,11 @@ code { font-family: var(--mono); font-size: 0.92em; }
   .hero { padding-top: 46px; }
   .search input { width: 150px; }
   .gacha-stage { min-height: 400px; }
+  .ten-grid, .gacha-stage.ten .ten-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px; padding: 28px 16px 58px;
+  }
+  .ten-slot { max-width: 104px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
