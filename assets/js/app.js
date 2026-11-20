@@ -312,6 +312,9 @@
       <div class="face front">
         <img src="${s.thumb}" alt="${escapeHtml(s.name)}" />
         <span class="rarity-tag" style="--rc:${r.color};--rg:${r.glow}">${s.rarity}</span>
+        <button class="card-fav gacha-fav${favs.has(s.id) ? ' on' : ''}" data-fav="${s.id}" title="收藏" aria-label="收藏">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20.5s-7.5-4.7-7.5-10A4.5 4.5 0 0 1 12 7.5a4.5 4.5 0 0 1 7.5 3c0 5.3-7.5 10-7.5 10z"/></svg>
+        </button>
         <div class="plate"><b>${escapeHtml(s.name)}</b><i>${escapeHtml(s.en || s.catLabel)}</i></div>
         <div class="sheen"></div>
       </div>`;
@@ -721,6 +724,9 @@
 
     // 抽卡台交互
     $('#gachaStage').addEventListener('click', (e) => {
+      /* 卡片右上角小心心：先拦下来，别触发打开详情 */
+      const favBtn = e.target.closest('[data-fav]');
+      if (favBtn) { e.stopPropagation(); toggleFav(favBtn.dataset.fav); return; }
       const card = e.target.closest('.gacha-card');
       if (card) openModal(card.dataset.id);
     });
